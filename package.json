@@ -1,5 +1,8 @@
 {
   "name": "sapients-ai-review",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "openai": "^5.0.0"
+  }
 }

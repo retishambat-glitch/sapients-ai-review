@@ -1,24 +1,25 @@
-// api/review.js
-export default async function handler(req, res) {
-  // Allow CORS so Godaddy frontend can call this
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(204).end();
-  }
-
+// api/review.js (temporary minimal handler to verify function runs)
+export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method === "OPTIONS") return res.status(204).end();
+
+  // Health / GET endpoint
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      now: new Date().toISOString(),
+      message: "health-check OK - minimal handler running"
+    });
   }
 
-  try {
-    const { rating, mood, experience } = req.body || {};
+  // Simple POST echo
+  if (req.method === "POST") {
+    const body = req.body || {};
+    return res.status(200).json({ ok: true, echo: body });
+  }
 
-    if (!rating || !mood) {
-      return res.status(400).json({ error: "Missing rating or mood" });
-    }
-
-    const prompt = `Write a natural, friendly ${rating}-star review for "The Sapients" in a ${mood} tone.
+  return res.status(405).json({ error: "Method not allowed" });
+}

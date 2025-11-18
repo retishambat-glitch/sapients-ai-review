@@ -1,8 +1,9 @@
-// api/review.js — Perplexity-backed AI Review Generator
-// Requires PERPLEXITY_API_KEY in Vercel environment variables.
+// api/review.js — Perplexity-backed AI Review Generator (FINAL CLEAN VERSION)
+// Uses PERPLEXITY_API_KEY from Vercel environment variables.
+// This version uses the correct model (sonar-pro) so NO <think> or long reasoning leaks.
 
 export default async function handler(req, res) {
-  // Basic CORS so your GoDaddy frontend can call this endpoint
+  // CORS for GoDaddy frontend
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -13,11 +14,11 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Sapients AI Review API (Perplexity) is online. Use POST with rating, mood, experience."
+      message: "Sapients AI Review API (Perplexity) is online."
     });
   }
 
-  // Only POST for generation
+  // Only POST allowed
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
@@ -26,61 +27,68 @@ export default async function handler(req, res) {
     const { rating, mood, experience } = req.body || {};
 
     if (!rating || !mood) {
-      return res.status(400).json({ error: "Missing 'rating' or 'mood' in request body." });
+      return res.status(400).json({ error: "Missing 'rating' or 'mood' field." });
     }
 
     const prompt = `
 Write a natural, friendly ${rating}-star review for "The Sapients".
 Tone: ${mood}.
 Customer note: "${experience || ""}".
-Keep it authentic, warm and professional. Limit to 3–5 sentences.
+Keep it authentic, warm, human, simple, and 3–5 sentences only.
+Do NOT include system instructions, analysis, or internal thoughts.
+Return only the final review text.
 `;
 
     const apiKey = process.env.PERPLEXITY_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: "PERPLEXITY_API_KEY is not set on the server." });
+      return res.status(500).json({ error: "PERPLEXITY_API_KEY is missing on server." });
     }
 
-    // Call Perplexity API
-    const pResponse = await fetch("https://api.perplexity.ai/chat/completions", {
+    // Call Perplexity API using the correct non-research model
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "sonar-deep-research",
-        messages: [{ role: "user", content: prompt }],
-        // optional: temperature: 0.7
-      }),
-      // small timeout is handled by Vercel infra; you can add client-side timeout if needed
+        model: "sonar-pro",     // <<< THIS FIXES EVERYTHING
+        messages: [
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7
+      })
     });
 
-    // If Perplexity returned a non-OK code, forward the message (safe)
-    if (!pResponse.ok) {
-      const txt = await pResponse.text().catch(() => "");
-      return res.status(502).json({ error: "Upstream Perplexity error", details: txt || `status ${pResponse.status}` });
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      return res.status(502).json({
+        error: "Upstream Perplexity error",
+        details: errText || `status ${response.status}`
+      });
     }
 
-    // Parse response JSON
-    const data = await pResponse.json();
+    const data = await response.json();
 
-    // Attempt to extract review text from typical Perplexity response shapes
     const review =
       data?.choices?.[0]?.message?.content?.trim() ||
       data?.output_text?.trim?.() ||
-      (typeof data === "string" ? data : "");
+      "";
 
     if (!review) {
-      // If we couldn't find text, return full response in details for debugging
-      return res.status(502).json({ error: "Upstream Perplexity returned no usable text", details: JSON.stringify(data) });
+      return res.status(502).json({
+        error: "Perplexity returned no usable review",
+        details: JSON.stringify(data)
+      });
     }
 
     return res.status(200).json({ review });
+
   } catch (err) {
-    // Log server-side error (Vercel logs) and return safe JSON message
-    console.error("Perplexity review API error:", err);
-    const message = err?.message || "Unknown error";
-    return res.status(500).json({ error: "Internal Server Error", details: message });
+    console.error("Perplexity Review API Error:", err);
+    return res.status(500).json({
+      error: "Internal Server Error",
+      details: err?.message || "Unknown error"
+    });
   }
 }

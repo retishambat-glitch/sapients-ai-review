@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to Google Reviews — The Sapients</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:36px;color:#222}
+  .card{max-width:720px;margin:auto;padding:18px;border-radius:10px;border:1px solid #eee;box-shadow:0 6px 20px rgba(0,0,0,.05);text-align:center}
+  .btn{display:inline-block;padding:10px 14px;background:#DB4437;color:#fff;border-radius:8px;text-decoration:none;font-weight:700}
+  p{color:#555}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Opening Google Review for The Sapients…</h2>
+    <p>If the page doesn't open automatically, click the button below. You may be asked to choose an app on mobile.</p>
+    <p><a id="openBtn" class="btn" href="#" target="_blank" rel="noopener">Open Google Reviews</a></p>
+    <p style="font-size:13px;color:#666;margin-top:12px">Redirecting now…</p>
+  </div>
+  <script>
+    const primary = "https://maps.app.goo.gl/2cRQYWP5S872PtsB7?g_st=ic";
+    const backup  = "https://www.google.com/maps/place/The+Sapients+-+Self+Development+Training+Organisation/@10.0092727,76.3156383,17z/data=!4m8!3m7!1s0x3b080d02ede3d2a7:0x3a78f162e5792868!8m2!3d10.0092727!4d76.3156383!9m1!1b1!16s%2Fg%2F1tlwd21_?hl=en-IN&entry=ttu";
+    document.getElementById('openBtn').href = primary;
+    setTimeout(() => {
+      try {
+        window.open(primary, "_blank", "noopener,noreferrer") || (window.top.location.href = primary);
+      } catch(e) { try { window.top.location.href = backup; } catch(_) {} }
+    }, 250);
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting to Facebook Reviews — The Sapients</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:36px;color:#222}
+  .card{max-width:720px;margin:auto;padding:18px;border-radius:10px;border:1px solid #eee;box-shadow:0 6px 20px rgba(0,0,0,.05);text-align:center}
+  .btn{display:inline-block;padding:10px 14px;background:#1877F2;color:#fff;border-radius:8px;text-decoration:none;font-weight:700}
+  p{color:#555}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Opening Facebook Reviews for The Sapients…</h2>
+    <p>If the page doesn't open automatically, click the button below. You may need to log in to Facebook to post a review.</p>
+    <p><a id="openBtn" class="btn" href="https://www.facebook.com/drretishambat/reviews" target="_blank" rel="noopener">Open Facebook Reviews</a></p>
+    <p style="font-size:13px;color:#666;margin-top:12px">Redirecting now…</p>
+  </div>
+  <script>
+    const fb = "https://www.facebook.com/drretishambat/reviews";
+    document.getElementById('openBtn').href = fb;
+    setTimeout(() => {
+      try { window.open(fb, "_blank", "noopener,noreferrer") || (window.top.location.href = fb); } catch(e) { try { window.top.location.href = fb; } catch(_) {} }
+    }, 250);
+  </script>
+</body>
+</html>

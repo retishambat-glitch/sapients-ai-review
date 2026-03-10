@@ -1,5 +1,14 @@
 export default async function handler(req, res) {
 
+  // Allow requests from browser
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -9,13 +18,15 @@ export default async function handler(req, res) {
     const { rating, mood, experience } = req.body;
 
     const prompt = `
-Write a short natural customer review for a training organization called "The Sapients".
+Write a short natural customer review for a training organisation called "The Sapients".
 
 Rating: ${rating} stars
 Tone: ${mood}
 Experience: ${experience}
 
-Keep it authentic, human, and between 2–4 sentences.
+The review should sound natural, authentic and human.
+Keep it between 2 and 4 sentences.
+Avoid sounding like advertising.
 `;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -32,24 +43,30 @@ Keep it authentic, human, and between 2–4 sentences.
             content: prompt
           }
         ],
-        temperature: 0.7,
+        temperature: 0.8,
         max_tokens: 120
       })
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI API error:", errorText);
+      return res.status(500).json({ error: "OpenAI API request failed" });
+    }
+
     const data = await response.json();
 
-    const review = data.choices[0].message.content;
+    const review = data.choices[0].message.content.trim();
 
-    res.status(200).json({
-      review
+    return res.status(200).json({
+      review: review
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error("Server error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: "Review generation failed"
     });
 

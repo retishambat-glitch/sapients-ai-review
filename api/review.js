@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const { rating, mood, experience } = req.body;
 
     const prompt = `
-Write a short natural customer review for a training organisation called "The Sapients".
+Write a short natural customer review for a training organization called "The Sapients".
 
 Rating: ${rating} stars
 Tone: ${mood}

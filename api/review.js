@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
 
-  // Allow browser requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -25,7 +24,7 @@ Tone: ${mood}
 Experience: ${experience}
 
 The review should sound natural and human.
-Keep it between 2–4 sentences.
+Keep it between 2 and 4 sentences.
 Avoid sounding like advertising.
 `;
 
@@ -38,8 +37,8 @@ Avoid sounding like advertising.
       body: JSON.stringify({
         model: "gpt-5-mini",
         input: prompt,
-        temperature: 0.8,
-        max_output_tokens: 120
+        max_output_tokens: 120,
+        temperature: 0.8
       })
     });
 
@@ -51,7 +50,7 @@ Avoid sounding like advertising.
 
     const data = await response.json();
 
-    const review = data.output_text || "";
+    const review = data.output[0].content[0].text;
 
     return res.status(200).json({
       review: review.trim()

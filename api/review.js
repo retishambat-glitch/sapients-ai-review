@@ -1,16 +1,13 @@
 export default async function handler(req, res) {
 
-  // Allow browser requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Handle preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -19,25 +16,18 @@ export default async function handler(req, res) {
 
     const { rating, mood, experience } = req.body;
 
-    const prompt = `
-Write a short natural customer review for a training organisation called "The Sapients".
-
-Rating: ${rating} stars
-Tone: ${mood}
-Experience: ${experience}
-
-Guidelines:
-- Sound natural and human.
-- Write like a real participant sharing feedback.
-- Keep it between 2 and 4 sentences.
-- Avoid marketing language.
-`;
+    const prompt =
+      "Write a short natural customer review for a training organisation called 'The Sapients'.\n\n" +
+      "Rating: " + rating + " stars\n" +
+      "Tone: " + mood + "\n" +
+      "Experience: " + experience + "\n\n" +
+      "Keep the review between 2 and 4 sentences. Make it sound like a real participant sharing feedback. Avoid advertising language.";
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": \`Bearer \${process.env.OPENAI_API_KEY}\`
+        "Authorization": "Bearer " + process.env.OPENAI_API_KEY
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
@@ -74,4 +64,5 @@ Guidelines:
     });
 
   }
+
 }

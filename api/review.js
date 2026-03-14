@@ -1,13 +1,16 @@
 export default async function handler(req, res) {
 
+  // Allow browser requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // Handle preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
+  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -23,22 +26,28 @@ Rating: ${rating} stars
 Tone: ${mood}
 Experience: ${experience}
 
-The review should sound natural and human.
-Keep it between 2 and 4 sentences.
-Avoid sounding like advertising.
+Guidelines:
+- Sound natural and human.
+- Write like a real participant sharing feedback.
+- Keep it between 2 and 4 sentences.
+- Avoid marketing language.
 `;
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": \`Bearer \${process.env.OPENAI_API_KEY}\`
       },
       body: JSON.stringify({
-        model: "gpt-5-mini",
-        input: prompt,
-        max_output_tokens: 120,
-        temperature: 0.8
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 120
       })
     });
 
@@ -50,10 +59,10 @@ Avoid sounding like advertising.
 
     const data = await response.json();
 
-    const review = data.output[0].content[0].text;
+    const review = data.choices[0].message.content.trim();
 
     return res.status(200).json({
-      review: review.trim()
+      review: review
     });
 
   } catch (error) {
